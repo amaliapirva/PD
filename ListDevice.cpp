@@ -8,49 +8,6 @@
 
 #pragma comment(lib, "Setupapi.lib")
 
-void ListUSBDevices() {
-	HDEVINFO hDevInfo = SetupDiGetClassDevs(&GUID_DEVCLASS_USB, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-	if (hDevInfo == INVALID_HANDLE_VALUE)
-	{
-		std::cerr << "Failed to get device list.\n";
-		return;
-	}
-
-	SP_DEVINFO_DATA devInfoData;
-	devInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
-	DWORD index = 0;
-	while (SetupDiEnumDeviceInfo(hDevInfo, index, &devInfoData)) {
-		index++;
-		char deviceName[256];
-		if (SetupDiGetDeviceRegistryPropertyA(hDevInfo, &devInfoData, SPDRP_DEVICEDESC, nullptr,
-			(PBYTE)deviceName, sizeof(deviceName), nullptr)) {
-			std::cout << "USB Device : " << deviceName << "\n";
-		}
-		else {
-			std::cout << "USB Device : Unknown\n";
-		}
-		SetupDiDestroyDeviceInfoList(hDevInfo);
-	}
-}
-
-void ListUSBDevicesRegistry() {
-	HKEY hKey;
-	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SYSTEM\\CurrentControlSet\\Enum\\USB"), 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
-		wchar_t subKeyName[256];
-		DWORD subKeySize = sizeof(subKeyName);
-		DWORD index = 0;
-		while (RegEnumKeyEx(hKey, index, subKeyName, &subKeySize, NULL, NULL, NULL, NULL) == ERROR_SUCCESS) {
-			std::cout << "USB Device: " << subKeyName << std::endl;
-			subKeySize = sizeof(subKeyName);
-			index++;
-		}
-
-		RegCloseKey(hKey);
-	}
-	else {
-		std::cerr << "Failed to open USB registry key.\n";
-	}
-}
 
 void ListUSBDevicesCV() {
 	HANDLE hHubDevice;
